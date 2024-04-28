@@ -139,7 +139,7 @@
 
     function playSound(number) {
         const sound = new Audio();
-        sound.src = `${number}.mp3`; // Assuming each sound file is named as the corresponding number
+        sound.src = `/numbers/${number}.mp3`; // Assuming each sound file is named as the corresponding number
         sound.play();
     }
     function redirectToHomePage() {

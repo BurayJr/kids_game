@@ -10,6 +10,7 @@
         margin: 0;
         padding: 0;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
         height: 100vh;
@@ -20,33 +21,28 @@
     }
 
     .container {
-        display: flex;
-        justify-content: space-between;
-        width: 80%;
-        max-width: 600px;
-        background-color: #fff;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        padding: 20px;
-    }
+    margin-top: 350px; /* Adjust this value as needed */
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+    max-width: 600px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
 
-    .numbers {
+    .numbers, .cards {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-    }
-
-    .cards {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        position: relative;
     }
 
     .number {
         font-size: 72px;
         font-weight: bold;
         cursor: pointer;
+        margin-bottom: 10px;
     }
 
     .card {
@@ -62,18 +58,18 @@
         max-width: 100%;
         max-height: 100%;
         border-radius: 5px;
-        pointer-events: none; /* Allow mouse events to pass through */
+        pointer-events: none;
     }
 
     .number-in-card {
-        font-size: 72px; /* Or any desired font size */
+        font-size: 72px;
         font-weight: bold;
         cursor: pointer;
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        z-index: 0; /* Ensure the number is behind the image */
+        z-index: 0;
         color: white;
     }
 
@@ -87,7 +83,6 @@
         display: none;
     }
 
-    /* Navbar styles */
     .navbar {
         position: fixed;
         top: 0;
@@ -95,25 +90,11 @@
         width: 100%;
         background-color: #333;
         overflow: hidden;
+        z-index: 1000;
     }
 
-    .navbar a {
+    .navbar a, .navbar button {
         float: left;
-        display: block;
-        color: white;
-        text-align: center;
-        padding: 14px 20px;
-        text-decoration: none;
-    }
-
-    .navbar a:hover {
-        background-color: #ddd;
-        color: black;
-    }
-
-    /* Back to Home button */
-    .back-to-home-btn {
-        float: right;
         display: block;
         color: white;
         text-align: center;
@@ -124,54 +105,58 @@
         cursor: pointer;
     }
 
-    .back-to-home-btn:hover {
+    .navbar a:hover, .navbar button:hover {
         background-color: #ddd;
         color: black;
     }
 
-    .game-history {
+    .leaderboard {
         margin-top: 20px;
+        width: 80%;
+        max-width: 600px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
     }
 
     .button {
-    display: inline-block;
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: bold;
-    text-transform: uppercase;
-    color: #fff;
-    background-color: #ff6b81; /* Green */
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        text-transform: uppercase;
+        color: #fff;
+        background-color: #ff6b81;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
 
-/* Button hover effect */
-.button:hover {
-    background-color: #e85c78; /* Darker green */
-}
+    .button:hover {
+        background-color: #e85c78;
+    }
 
-/* Button focus effect */
-.button:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2); /* Add a subtle border around the button on focus */
-}
+    .button:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2);
+    }
 </style>
 <script>
     var games = JSON.parse(localStorage.getItem('games')) || [];
     var gameCompleted = localStorage.getItem('gameCompleted') === 'true';
     var correctCount = 0;
     var startTime;
-    var scoreDisplay = document.getElementById('score');
-
-    var originalNumbersOrder = [];
-    var originalCardsOrder = [];
 
     var initialState = {
-    "numbers": [],
-    "cards": []
-};
+        "numbers": [],
+        "cards": []
+    };
+
+    function redirectToHomePage() {
+        window.location.href = "index.html"; // Replace "index.html" with your home page URL
+    }
 
     function allowDrop(ev) {
         ev.preventDefault();
@@ -182,113 +167,91 @@
     }
 
     function drop(ev) {
-    ev.preventDefault();
-    var data = ev.dataTransfer.getData("text");
-    var dropTarget = ev.target;
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text");
+        var dropTarget = ev.target;
+        var dragElement = document.getElementById(data);
+        
+        if (dragElement.classList.contains('number')) {
+            dragElement.remove();
+            
+            if (dropTarget.classList.contains('card') && dropTarget.dataset.value === dragElement.innerHTML.trim()) {
+                var numberInCard = dropTarget.querySelector('.number-in-card');
+                if (numberInCard) {
+                    numberInCard.remove();
+                }
+                var numberElement = document.createElement('div');
+                numberElement.classList.add('number-in-card');
+                numberElement.innerHTML = dragElement.innerHTML.trim();
+                dropTarget.appendChild(numberElement);
+                dropTarget.classList.add('correct');
+                correctCount++;
+                playCorrectSound();
 
-    // Get the dragged element
-    var dragElement = document.getElementById(data);
-    
-    // Check if the dropped element is a number
-    if (dragElement.classList.contains('number')) {
-        // Remove the number from the drag area
-        dragElement.remove();
-        
-        // Check if all numbers on the left are used
-       
-        
-        // If dropped number matches the card's value, proceed as before
-        if (dropTarget.classList.contains('card') && dropTarget.dataset.value === dragElement.innerHTML.trim()) {
-            var numberInCard = dropTarget.querySelector('.number-in-card');
-            if (numberInCard) {
-                numberInCard.remove(); // Remove existing number if any
+                if (document.querySelectorAll('.number').length === 0) {
+                    checkGameCompletion();
+                }
+            } else {
+                playIncorrectSound();
             }
-            var numberElement = document.createElement('div');
-            numberElement.classList.add('number-in-card');
-            numberElement.innerHTML = dragElement.innerHTML.trim();
-            dropTarget.appendChild(numberElement);
-            dropTarget.classList.add('correct'); // Apply .correct class to the matched card
-            correctCount++;
-            playCorrectSound()
-
-            if (document.querySelectorAll('.number').length === 0) {
-            // If all numbers are used, call checkGameCompletion
-            checkGameCompletion();
-        }
-        } else {
-            // If dropped number doesn't match the card's value, indicate incorrect
-            playIncorrectSound(); // Play incorrect sound
-        }
-    } else if (dragElement.classList.contains('number-in-card')) { // If the dragged element is a number already in a card
-        // Check if the dropped target is an empty card
-        if (dropTarget.classList.contains('card') && !dropTarget.querySelector('.number-in-card')) {
-            var clonedNumber = dragElement.cloneNode(true);
-            dropTarget.appendChild(clonedNumber);
-            dragElement.remove(); // Remove the dragged number from its original position
+        } else if (dragElement.classList.contains('number-in-card')) {
+            if (dropTarget.classList.contains('card') && !dropTarget.querySelector('.number-in-card')) {
+                var clonedNumber = dragElement.cloneNode(true);
+                dropTarget.appendChild(clonedNumber);
+                dragElement.remove();
+            }
         }
     }
-}
 
-function playIncorrectSound() {
-    var audio = document.getElementById("incorrectSound");
-    audio.play();
-}
+    function playIncorrectSound() {
+        var audio = document.getElementById("incorrectSound");
+        audio.play();
+    }
 
-function playCorrectSound() {
-    var audio = document.getElementById("correctSound");
-    audio.play();
-}
+    function playCorrectSound() {
+        var audio = document.getElementById("correctSound");
+        audio.play();
+    }
 
-function checkGameCompletion() {
-    var endTime = new Date();
-    var timeTaken = formatTime(endTime - startTime); // Calculate time taken
-
-    games.push({ correctCount: correctCount });
-    
-    // Check if all numbers are used
-    if (document.querySelectorAll('.number').length === 0) {
-        // Calculate the score based on how many numbers were placed correctly
-        var score = correctCount;
-        var maxScore = 9; // Total number of correct placements
-     
-        message = "Tačno ste spojili " + score + ", od mogućih " + maxScore;
+    function checkGameCompletion() {
+        var endTime = new Date();
+        var timeTaken = formatTime(endTime - startTime);
+        var username = localStorage.getItem('username') || 'Anonymous';
+        games.push({ username: username, correctCount: correctCount, time: timeTaken });
         
-        // Display the message
-        alert("Bravo! Pobedili ste, trebalo vam je " + timeTaken + ". " + message);
-        restartGame();
-    } else {
-        // If not all numbers are used, display a generic completion message
-        alert("Izgubili ste, trebalo vam je " + timeTaken + "!");
-    }
-    updateGameHistory();
-
-}
-
-function restartGame() {
-    var numbersContainer = document.querySelector('.numbers');
-    var cardsContainer = document.querySelector('.cards');
-
-    // Clear game board
-    numbersContainer.innerHTML = '';
-    cardsContainer.innerHTML = '';
-
-    // Load and apply initial game state from JSON
-    var jsonGameState = JSON.parse(localStorage.getItem('initialGameState'));
-    if (jsonGameState) {
-        numbersContainer.innerHTML = jsonGameState.numbers;
-        cardsContainer.innerHTML = jsonGameState.cards;
+        if (document.querySelectorAll('.number').length === 0) {
+            var score = correctCount;
+            var maxScore = 9;
+            var message = "Tačno ste spojili " + score + ", od mogućih " + maxScore;
+            alert("Bravo! Pobedili ste, trebalo vam je " + timeTaken + ". " + message);
+            restartGame();
+        } else {
+            alert("Izgubili ste, trebalo vam je " + timeTaken + "!");
+        }
+        updateLeaderboard();
     }
 
-    // Reset counters and flags
-    correctCount = 0;
-    gameCompleted = false;
-    localStorage.removeItem('gameCompleted');
-    startTime = new Date(); // Reset start time
+    function restartGame() {
+        var numbersContainer = document.querySelector('.numbers');
+        var cardsContainer = document.querySelector('.cards');
 
-    // Shuffle elements after restoring original order
-    shuffleElements(numbersContainer);
-    shuffleElements(cardsContainer);
-}
+        numbersContainer.innerHTML = '';
+        cardsContainer.innerHTML = '';
+
+        var jsonGameState = JSON.parse(localStorage.getItem('initialGameState'));
+        if (jsonGameState) {
+            numbersContainer.innerHTML = jsonGameState.numbers;
+            cardsContainer.innerHTML = jsonGameState.cards;
+        }
+
+        correctCount = 0;
+        gameCompleted = false;
+        localStorage.removeItem('gameCompleted');
+        startTime = new Date();
+
+        shuffleElements(numbersContainer);
+        shuffleElements(cardsContainer);
+    }
 
     function formatTime(milliseconds) {
         var minutes = Math.floor(milliseconds / (1000 * 60));
@@ -305,57 +268,67 @@ function restartGame() {
         });
     }
 
-    window.onload = function() {
-    startTime = new Date(); // Capture the start time when the page loads
+    function promptForUsername() {
+    var username = prompt("Unesite vaše ime:");
+    if (username) {
+        localStorage.setItem('username', username);
+    } else {
+        localStorage.setItem('username', 'Anonymous');
+    }
+}
+
+window.onload = function() {
+    promptForUsername();
+
+    alert("Spojite brojeve i količinu leptira sa slike da se slažu jedni s drugima!");
+    
+    startTime = new Date();
     var numbersContainer = document.querySelector('.numbers');
     var cardsContainer = document.querySelector('.cards');
 
-    // Load initial game state from JSON
     var jsonGameState = JSON.parse(localStorage.getItem('initialGameState'));
     if (jsonGameState) {
         numbersContainer.innerHTML = jsonGameState.numbers;
         cardsContainer.innerHTML = jsonGameState.cards;
     } else {
-        // If no initial game state in JSON, shuffle and save the state
         shuffleElements(numbersContainer);
         shuffleElements(cardsContainer);
         saveInitialState();
     }
     shuffleElements(numbersContainer);
-        shuffleElements(cardsContainer);
+    shuffleElements(cardsContainer);
 
-    updateGameHistory();
+    // Load games array from local storage
+    var storedGames = localStorage.getItem('games');
+    if (storedGames) {
+        games = JSON.parse(storedGames);
+    }
+
+    updateLeaderboard();
 };
 
-    function redirectToHomePage() {
-        window.location.href = "home.html"; // Replace "index.html" with your home page URL
-    }
+function updateLeaderboard() {
+    var leaderboard = document.getElementById('leaderboardList');
+    leaderboard.innerHTML = '';
+    games.forEach(function(game, index) {
+        var listItem = document.createElement('li');
+        listItem.textContent = (index + 1) + ". " + game.username + " - " + game.correctCount + " tačnih (" + game.time + ")";
+        leaderboard.appendChild(listItem);
+    });
 
-    function updateGameHistory() {
-            var gameList = document.getElementById('gameList');
-            gameList.innerHTML = ''; // Clear existing list
-
-            games.forEach(function(game, index) {
-                var listItem = document.createElement('li');
-                listItem.textContent = "Igra " + (index + 1) + ": " + game.correctCount + " tačnih";
-                gameList.appendChild(listItem);
-            });
-
-            localStorage.setItem('games', JSON.stringify(games));
-    }
-
-    function saveInitialState() {
-    var numbersContainer = document.querySelector('.numbers');
-    var cardsContainer = document.querySelector('.cards');
-
-    // Save initial game state to JSON
-    initialState.numbers = numbersContainer.innerHTML;
-    initialState.cards = cardsContainer.innerHTML;
-    localStorage.setItem('initialGameState', JSON.stringify(initialState));
+    // Save games array to local storage
+    localStorage.setItem('games', JSON.stringify(games));
 }
 
+    function saveInitialState() {
+        var numbersContainer = document.querySelector('.numbers');
+        var cardsContainer = document.querySelector('.cards');
 
-</script>   
+        initialState.numbers = numbersContainer.innerHTML;
+        initialState.cards = cardsContainer.innerHTML;
+        localStorage.setItem('initialGameState', JSON.stringify(initialState));
+    }
+</script>
 </head>
 <body>
     <audio id="incorrectSound">
@@ -367,71 +340,68 @@ function restartGame() {
         <source src="sound/correct.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
+
     <div class="navbar">
         <button class="back-to-home-btn" onclick="redirectToHomePage()">Nazad na početnu stranicu</button>
-         <!-- Add a button to restart the game -->
-    </div>
-    
-<div class="container">
-    <div class="game-history">
         <button onclick="restartGame()" class="button">Ponovi igru</button>
-        <h2>Istorija odigranih igra</h2>
-        <ul id="gameList"></ul>
     </div>
-    
-    
-    
-    <div class="numbers">
-        <div id="drag1" class="number" draggable="true" ondragstart="drag(event)">1</div>
-        <div id="drag2" class="number" draggable="true" ondragstart="drag(event)">2</div>
-        <div id="drag3" class="number" draggable="true" ondragstart="drag(event)">3</div>
-        <div id="drag4" class="number" draggable="true" ondragstart="drag(event)">4</div>
-        <div id="drag5" class="number" draggable="true" ondragstart="drag(event)">5</div>
-        <div id="drag6" class="number" draggable="true" ondragstart="drag(event)">6</div>
-        <div id="drag7" class="number" draggable="true" ondragstart="drag(event)">7</div>
-        <div id="drag8" class="number" draggable="true" ondragstart="drag(event)">8</div>
-        <div id="drag9" class="number" draggable="true" ondragstart="drag(event)">9</div>
-    </div>
-    <div class="cards">
-        <div id="drop1" class="card" data-value="1" ondrop="drop(event)" ondragover="allowDrop(event)">
-            <img src="one.png" alt="Image 1">
-            <div class="number-in-card"></div>
-        </div>
-        <div id="drop2" class="card" data-value="2" ondrop="drop(event)" ondragover="allowDrop(event)">
-            <img src="two.png" alt="Image 2">
-            <div class="number-in-card"></div>
-        </div>
-        <div id="drop3" class="card" data-value="3" ondrop="drop(event)" ondragover="allowDrop(event)">
-            <img src="three.png" alt="Image 3">
-            <div class="number-in-card"></div>
-        </div>
-        <div id="drop4" class="card" data-value="4" ondrop="drop(event)" ondragover="allowDrop(event)">
-            <img src="four.png" alt="Image 4">
-            <div class="number-in-card"></div>
-        </div>
-        <div id="drop5" class="card" data-value="5" ondrop="drop(event)" ondragover="allowDrop(event)">
-            <img src="five.png" alt="Image 5">
-            <div class="number-in-card"></div>
-        </div>
-        <div id="drop6" class="card" data-value="6" ondrop="drop(event)" ondragover="allowDrop(event)">
-            <img src="six.png" alt="Image 6">
-            <div class="number-in-card"></div>
-        </div>
-        <div id="drop7" class="card" data-value="7" ondrop="drop(event)" ondragover="allowDrop(event)">
-            <img src="seven.png" alt="Image 7">
-            <div class="number-in-card"></div>
-        </div>
-        <div id="drop8" class="card" data-value="8" ondrop="drop(event)" ondragover="allowDrop(event)">
-            <img src="eight.png" alt="Image 8">
-            <div class="number-in-card"></div>
-        </div>
-        <div id="drop9" class="card" data-value="9" ondrop="drop(event)" ondragover="allowDrop(event)">
-            <img src="nine.png" alt="Image 9">
-            <div class="number-in-card"></div>
-        </div>
-    </div>
-    
-</div>
 
+    
+    <div class="container">
+        <div class="numbers">
+            <div id="drag1" class="number" draggable="true" ondragstart="drag(event)">1</div>
+            <div id="drag2" class="number" draggable="true" ondragstart="drag(event)">2</div>
+            <div id="drag3" class="number" draggable="true" ondragstart="drag(event)">3</div>
+            <div id="drag4" class="number" draggable="true" ondragstart="drag(event)">4</div>
+            <div id="drag5" class="number" draggable="true" ondragstart="drag(event)">5</div>
+            <div id="drag6" class="number" draggable="true" ondragstart="drag(event)">6</div>
+            <div id="drag7" class="number" draggable="true" ondragstart="drag(event)">7</div>
+            <div id="drag8" class="number" draggable="true" ondragstart="drag(event)">8</div>
+            <div id="drag9" class="number" draggable="true" ondragstart="drag(event)">9</div>
+        </div>
+        <div class="cards">
+            <div id="drop1" class="card" data-value="1" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <img src="one.png" alt="Image 1">
+                <div class="number-in-card"></div>
+            </div>
+            <div id="drop2" class="card" data-value="2" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <img src="two.png" alt="Image 2">
+                <div class="number-in-card"></div>
+            </div>
+            <div id="drop3" class="card" data-value="3" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <img src="three.png" alt="Image 3">
+                <div class="number-in-card"></div>
+            </div>
+            <div id="drop4" class="card" data-value="4" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <img src="four.png" alt="Image 4">
+                <div class="number-in-card"></div>
+            </div>
+            <div id="drop5" class="card" data-value="5" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <img src="five.png" alt="Image 5">
+                <div class="number-in-card"></div>
+            </div>
+            <div id="drop6" class="card" data-value="6" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <img src="six.png" alt="Image 6">
+                <div class="number-in-card"></div>
+            </div>
+            <div id="drop7" class="card" data-value="7" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <img src="seven.png" alt="Image 7">
+                <div class="number-in-card"></div>
+            </div>
+            <div id="drop8" class="card" data-value="8" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <img src="eight.png" alt="Image 8">
+                <div class="number-in-card"></div>
+            </div>
+            <div id="drop9" class="card" data-value="9" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <img src="nine.png" alt="Image 9">
+                <div class="number-in-card"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="leaderboard">
+        <h2>Leaderboard</h2>
+        <ul id="leaderboardList"></ul>
+    </div>
 </body>
 </html>

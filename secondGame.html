@@ -21,18 +21,21 @@
     }
 
     .container {
-        margin-top: 100px; /* Adjust this value as needed */
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
-        width: 90%;
-        max-width: 600px;
-        background-color: #fff;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        padding: 20px;
-    }
+    position: absolute;
+    top: calc(100px + 20px); /* Height of navbar + any additional spacing */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    max-width: 600px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
 
     .numbers, .cards {
         display: flex;
@@ -116,14 +119,17 @@
     }
 
     .leaderboard {
-        margin-top: 20px;
-        width: 90%;
-        max-width: 600px;
-        background-color: #fff;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        padding: 20px;
-    }
+    position: absolute;
+    top: calc(100px + 20px + 100vh + 20px); /* Height of navbar + any additional spacing + container height + any additional spacing */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 600px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
 
     .button {
         display: inline-block;
@@ -170,7 +176,6 @@
 </style>
 <script>
     var games = JSON.parse(localStorage.getItem('games')) || [];
-    var gameCompleted = localStorage.getItem('gameCompleted') === 'true';
     var correctCount = 0;
     var startTime;
 
@@ -192,41 +197,47 @@
     }
 
     function drop(ev) {
-        ev.preventDefault();
-        var data = ev.dataTransfer.getData("text");
-        var dropTarget = ev.target;
-        var dragElement = document.getElementById(data);
+    ev.preventDefault();
+    var data = ev.dataTransfer.getData("text");
+    var dropTarget = ev.target;
+    var dragElement = document.getElementById(data);
+    
+    if (dragElement.classList.contains('number')) {
+        dragElement.remove();
         
-        if (dragElement.classList.contains('number')) {
-            dragElement.remove();
-            
-            if (dropTarget.classList.contains('card') && dropTarget.dataset.value === dragElement.innerHTML.trim()) {
-                var numberInCard = dropTarget.querySelector('.number-in-card');
-                if (numberInCard) {
-                    numberInCard.remove();
-                }
-                var numberElement = document.createElement('div');
-                numberElement.classList.add('number-in-card');
-                numberElement.innerHTML = dragElement.innerHTML.trim();
-                dropTarget.appendChild(numberElement);
-                dropTarget.classList.add('correct');
-                correctCount++;
-                playCorrectSound();
+        if (dropTarget.classList.contains('card') && dropTarget.dataset.value === dragElement.innerHTML.trim()) {
+            var numberInCard = dropTarget.querySelector('.number-in-card');
+            if (numberInCard) {
+                numberInCard.remove();
+            }
+            var numberElement = document.createElement('div');
+            numberElement.classList.add('number-in-card');
+            numberElement.innerHTML = dragElement.innerHTML.trim();
+            dropTarget.appendChild(numberElement);
+            dropTarget.classList.add('correct');
+            correctCount++;
+            playCorrectSound();
+        } else {
+            playIncorrectSound();
+        }
 
-                if (document.querySelectorAll('.number').length === 0) {
-                    checkGameCompletion();
-                }
-            } else {
-                playIncorrectSound();
-            }
-        } else if (dragElement.classList.contains('number-in-card')) {
-            if (dropTarget.classList.contains('card') && !dropTarget.querySelector('.number-in-card')) {
-                var clonedNumber = dragElement.cloneNode(true);
-                dropTarget.appendChild(clonedNumber);
-                dragElement.remove();
-            }
+        // Check game completion after the drop operation
+       // checkGameCompletion();
+    } else if (dragElement.classList.contains('number-in-card')) {
+        if (dropTarget.classList.contains('card') && !dropTarget.querySelector('.number-in-card')) {
+            var clonedNumber = dragElement.cloneNode(true);
+            dropTarget.appendChild(clonedNumber);
+            dragElement.remove();
         }
     }
+
+    // Update the remaining numbers count after each drop
+    var remainingNumbers = document.querySelectorAll('.numbers .number');
+    if (remainingNumbers.length === 0) {
+        // If no remaining numbers, end the game
+        checkGameCompletion();
+    }
+}
 
     function playIncorrectSound() {
         var audio = document.getElementById("incorrectSound");
@@ -239,22 +250,26 @@
     }
 
     function checkGameCompletion() {
-        var endTime = new Date();
-        var timeTaken = formatTime(endTime - startTime);
-        var username = localStorage.getItem('username') || 'Anonymous';
-        games.push({ username: username, correctCount: correctCount, time: timeTaken });
-        
-        if (document.querySelectorAll('.number').length === 0) {
-            var score = correctCount;
-            var maxScore = 9;
-            var message = "Tačno ste spojili " + score + ", od mogućih " + maxScore;
-            alert("Bravo! Pobedili ste, trebalo vam je " + timeTaken + ". " + message);
-            restartGame();
-        } else {
-            alert("Izgubili ste, trebalo vam je " + timeTaken + "!");
-        }
-        updateLeaderboard();
+    var endTime = new Date();
+    var timeTaken = formatTime(endTime - startTime);
+    var username = localStorage.getItem('username') || 'Anonymous';
+    games.push({ username: username, correctCount: correctCount, time: timeTaken });
+
+    // Get the remaining numbers
+    var remainingNumbers = document.querySelectorAll('.number');
+
+    // Check if all numbers have been placed correctly
+    if (correctCount === 9) {
+        alert("Bravo! Pobedili ste, trebalo vam je " + timeTaken + ".");
+        restartGame();
+    } else if (remainingNumbers.length === 0) {
+        alert("Izgubili ste, trebalo vam je " + timeTaken + "!");
+        restartGame();
     }
+
+    updateLeaderboard();
+}
+
 
     function restartGame() {
         var numbersContainer = document.querySelector('.numbers');
@@ -270,8 +285,6 @@
         }
 
         correctCount = 0;
-        gameCompleted = false;
-        localStorage.removeItem('gameCompleted');
         startTime = new Date();
 
         shuffleElements(numbersContainer);

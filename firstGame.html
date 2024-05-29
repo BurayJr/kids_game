@@ -11,8 +11,8 @@
         padding: 0;
         display: flex;
         justify-content: center;
-        align-items: center;
-        height: 100vh;
+        align-items: flex-start;
+        min-height: 100vh;
         background: linear-gradient(to bottom, #70a1ff, #ff6b81);
         background-repeat: no-repeat;
         background-attachment: fixed;
@@ -27,10 +27,12 @@
         width: 100%;
         max-width: 1200px;
         padding: 20px;
+        margin-top: 60px; /* Ensure cards are below the navbar */
     }
 
     .card {
-        width: 200px;
+        flex: 1 1 calc(33.333% - 20px); /* Flexible cards with 3 per row on larger screens */
+        max-width: 200px;
         height: 200px;
         border-radius: 8px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -39,16 +41,17 @@
         justify-content: center;
         align-items: center;
         flex-direction: column;
-        cursor: pointer; /* Add cursor pointer */
+        cursor: pointer;
         background-size: cover;
         background-position: center;
-        color: white; /* Set text color to white for better visibility */
+        color: white;
+        position: relative;
     }
 
     .card:hover::before {
         content: attr(data-number);
         position: absolute;
-        font-size: 120px; /* Larger font size */
+        font-size: 6vw;
         font-weight: bold;
         color: white;
         border-radius: 10px;
@@ -62,6 +65,7 @@
         width: 100%;
         background-color: #333;
         overflow: hidden;
+        z-index: 1000; /* Ensure the navbar stays above other content */
     }
 
     .navbar a {
@@ -95,6 +99,47 @@
         background-color: #ddd;
         color: black;
     }
+
+    @media (max-width: 1024px) {
+        .card {
+            flex: 1 1 calc(50% - 20px); /* 2 cards per row on medium screens */
+            height: 150px;
+        }
+
+        .card:hover::before {
+            font-size: 8vw;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .card {
+            flex: 1 1 100%; /* 1 card per row on small screens */
+            height: 120px;
+        }
+
+        .card:hover::before {
+            font-size: 10vw;
+        }
+
+        .container {
+            margin-top: 80px; /* Increased margin for smaller screens */
+        }
+    }
+
+    @media (max-width: 400px) {
+        .card {
+            flex: 1 1 100%; /* 1 card per row on very small screens */
+            height: 100px;
+        }
+
+        .card:hover::before {
+            font-size: 12vw;
+        }
+
+        .container {
+            margin-top: 100px; /* Increased margin for very small screens */
+        }
+    }
 </style>
 </head>
 <body>
@@ -103,16 +148,16 @@
     </div>
 
 <div class="container">
-    <div class="card" data-number="1" style = "background-image: url('butterfly.jpg')"></div>
-    <div class="card" data-number="2" style = "background-image: url('butterfly2.jpg')"></div>
-    <div class="card" data-number="3" style = "background-image: url('butterfly3.jpg')"></div>
-    <div class="card" data-number="4" style = "background-image: url('butterfly4.jpg')"></div>
-    <div class="card" data-number="5" style = "background-image: url('butterfly5.jpg')"></div>
-    <div class="card" data-number="6" style = "background-image: url('butterfly6.jpg')"></div>
-    <div class="card" data-number="7" style = "background-image: url('butterfly7.jpg')"></div>
-    <div class="card" data-number="8" style = "background-image: url('butterfly8.jpg')"></div>
-    <div class="card" data-number="9" style = "background-image: url('butterfly9.jpg')"></div>
-    <div class="card" data-number="10"style = "background-image: url('butterfly11.jpg')"></div>
+    <div class="card" data-number="1" style="background-image: url('butterfly.jpg')"></div>
+    <div class="card" data-number="2" style="background-image: url('butterfly2.jpg')"></div>
+    <div class="card" data-number="3" style="background-image: url('butterfly3.jpg')"></div>
+    <div class="card" data-number="4" style="background-image: url('butterfly4.jpg')"></div>
+    <div class="card" data-number="5" style="background-image: url('butterfly5.jpg')"></div>
+    <div class="card" data-number="6" style="background-image: url('butterfly6.jpg')"></div>
+    <div class="card" data-number="7" style="background-image: url('butterfly7.jpg')"></div>
+    <div class="card" data-number="8" style="background-image: url('butterfly8.jpg')"></div>
+    <div class="card" data-number="9" style="background-image: url('butterfly9.jpg')"></div>
+    <div class="card" data-number="10" style="background-image: url('butterfly11.jpg')"></div>
 </div>
 
 <audio id="audioPlayer">
@@ -142,9 +187,10 @@
         sound.src = `${number}.mp3`; // Assuming each sound file is named as the corresponding number
         sound.play();
     }
+
     function redirectToHomePage() {
-            window.location.href = "index.html"; // Replace "index.html" with your home page URL
-        }
+        window.location.href = "index.html"; // Replace "index.html" with your home page URL
+    }
 </script>
 
 </body>

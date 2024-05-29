@@ -100,46 +100,34 @@
         color: black;
     }
 
-    @media (max-width: 1024px) {
-        .card {
-            flex: 1 1 calc(50% - 20px); /* 2 cards per row on medium screens */
-            height: 150px;
-        }
-
-        .card:hover::before {
-            font-size: 8vw;
-        }
-    }
-
     @media (max-width: 600px) {
-        .card {
-            flex: 1 1 100%; /* 1 card per row on small screens */
-            height: 120px;
-        }
-
-        .card:hover::before {
-            font-size: 10vw;
-        }
-
-        .container {
-            margin-top: 80px; /* Increased margin for smaller screens */
-        }
+    .card {
+        flex: 1 1 100%; /* 1 card per row on small screens */
+        height: 120px;
+        background-size: cover; /* Change background size to cover */
+        background-repeat: no-repeat; /* Prevent background from repeating */
+        background-position: center; /* Center the background image */
     }
+}
 
-    @media (max-width: 400px) {
-        .card {
-            flex: 1 1 100%; /* 1 card per row on very small screens */
-            height: 100px;
-        }
 
-        .card:hover::before {
-            font-size: 12vw;
-        }
-
-        .container {
-            margin-top: 100px; /* Increased margin for very small screens */
-        }
+@media (max-width: 420px) {
+    .card {
+        flex: 1 1 100%; /* 1 card per row on small screens */
+        height: 120px;
+        background-size: contain; /* Change background size to contain */
     }
+}
+
+@media (max-width: 410px) {
+    .card {
+        flex: 1 1 100%; /* 1 card per row on very small screens */
+        height: 100px;
+        background-size: cover; /* Change background size to cover */
+        background-repeat: no-repeat; /* Prevent background from repeating */
+        background-position: center; /* Center the background image */
+    }
+}
 </style>
 </head>
 <body>

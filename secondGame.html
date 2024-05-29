@@ -257,13 +257,14 @@
 
     // Get the remaining numbers
     var remainingNumbers = document.querySelectorAll('.number');
+    var message = "Tačno ste spojili " + score + ", od mogućih " + maxScore;
 
     // Check if all numbers have been placed correctly
     if (correctCount === 9) {
-        alert("Bravo! Pobedili ste, trebalo vam je " + timeTaken + ".");
+        alert("Bravo! Pobedili ste, trebalo vam je " + timeTaken + "." + message);
         restartGame();
     } else if (remainingNumbers.length === 0) {
-        alert("Izgubili ste, trebalo vam je " + timeTaken + "!");
+        alert("Izgubili ste, trebalo vam je " + timeTaken + "!" + message);
         restartGame();
     }
 
